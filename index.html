@@ -3,832 +3,1107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分阶段定投计算器（QDII 自包含存档版）</title>
+<title>多基金定投时间线计算器 v11</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:18px 12px 36px;background:#f3f6fb;color:#172033;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-.container{max-width:640px;margin:auto}
+body{margin:0;padding:16px 12px 44px;background:#f3f6fb;color:#172033;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.container{max-width:680px;margin:auto}
 header,.panel{background:#fff;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 5px 22px rgba(20,40,80,.06)}
-h1{font-size:22px;margin:0 0 7px}
+h1{font-size:20px;margin:0 0 6px}
 .sub,.muted{color:#667085;font-size:13px;line-height:1.6}
-h2{font-size:17px;margin:0 0 12px}
-label{display:block;font-size:14px;font-weight:650;margin:12px 0 6px}
-input[type="date"],input[type="number"]{width:100%;min-width:0;padding:11px 10px;border:1px solid #d7deea;border-radius:10px;font-size:16px;background:white;color:#172033}
-input:focus{outline:2px solid #b8ccff;border-color:#4778ee}
+h2{font-size:17px;margin:0 0 10px}
+label{display:block;font-size:13px;font-weight:650;margin:8px 0 4px;color:#334155}
+input[type="date"],input[type="number"],input[type="text"],select{width:100%;min-width:0;padding:10px;border:1px solid #d7deea;border-radius:10px;font-size:15px;background:#fff;color:#172033}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stage,.pause-item{border:1px solid #e1e6ef;border-radius:13px;padding:12px;margin:10px 0;background:#fcfdff}
-.pause-item{background:#fffaf5;border-color:#f3dfc8}
-.stage-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
-.stage-title{font-weight:700;font-size:14px}
-.pause-title{font-weight:700;font-size:14px;color:#b45309}
-.stage-fields{display:grid;grid-template-columns:1.15fr 1fr;gap:10px}
-.pause-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button{border:0;border-radius:11px;padding:12px 14px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+button{border:0;border-radius:11px;padding:12px 14px;font-size:14.5px;font-weight:700;cursor:pointer}
 button:active{opacity:.82}
-.primary{width:100%;background:#245bd6;color:white;margin-top:12px}
-.save-btn{width:100%;background:linear-gradient(135deg,#0f766e,#0d9488);color:white;margin-top:10px;box-shadow:0 4px 12px rgba(15,118,110,.22)}
-.copy-btn{width:100%;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;margin-top:8px;font-size:13.5px;padding:10px}
+.primary{width:100%;background:#245bd6;color:#fff;margin-top:12px}
 .secondary{background:#edf2ff;color:#245bd6}
-.secondary-warn{background:#fef3c7;color:#b45309}
-.delete{background:#fff0f0;color:#b42318;padding:8px 10px;font-size:13px}
+.secondary-stop{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
+.copy-btn{width:100%;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;margin-top:8px;font-size:13px;padding:10px}
+.delete{background:#fff0f0;color:#b42318;padding:6px 10px;font-size:12px;border-radius:8px}
+.chip{background:#fff;border:1px solid #d1d5db;color:#374151;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:600}
+.timeline-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.event-list{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+.event-card{border-radius:14px;padding:12px;border:1px solid #e2e8f0;background:#fff}
+.event-card.invest{border-left:5px solid #10b981;background:#fafffd}
+.event-card.stop{border-left:5px solid #f43f5e;background:#fff9fa}
+.event-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed #e2e8f0}
+.event-badge{font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px}
+.event-badge.invest{background:#dcfce7;color:#15803d}
+.event-badge.stop{background:#ffe4e6;color:#be123c}
+.event-row-grid{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:8px;align-items:end}
+.stop-placeholder{padding:10px;border-radius:10px;background:#ffe4e6;color:#be123c;font-size:13px;font-weight:700;text-align:center}
 
-/* 存档栏样式 */
-.save-panel{background:linear-gradient(135deg,#f0fdf4,#ecfeff);border:1px solid #bbf7d0}
-.save-meta{font-size:12.5px;color:#0f766e;background:#fff;border:1px dashed #99f6e4;border-radius:10px;padding:9px 11px;margin-top:10px;line-height:1.55}
-.toast{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;background:#dcfce7;color:#166534;border:1px solid #86efac}
+.summary-card{background:linear-gradient(135deg,#1e293b,#334155);color:#fff;border-radius:16px;padding:16px;margin-bottom:14px}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary-item{background:rgba(255,255,255,.08);border-radius:10px;padding:10px}
+.s-lbl{font-size:12px;color:#cbd5e1}
+.s-val{font-size:17px;font-weight:800;margin-top:3px;color:#fff}
 
-/* 开关样式 */
-.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-top:12px}
-.toggle-row .t-title{font-size:14px;font-weight:700;color:#1e293b}
-.toggle-row .t-desc{font-size:12px;color:#64748b;margin-top:2px;line-height:1.45}
-.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
-.switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#cbd5e1;transition:.25s;border-radius:999px}
-.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:white;transition:.25s;border-radius:50%}
-input:checked + .slider{background:#245bd6}
-input:checked + .slider:before{transform:translateX(20px)}
+.live-stack{display:flex;flex-direction:column;gap:12px}
+.live-card{background:linear-gradient(135deg,#eafaf2,#eef5ff);border:1px solid #cde9d9;border-radius:16px;padding:16px}
+.compare-card{background:linear-gradient(135deg,#fff8ec,#fff2f2);border:1px solid #f5dec0;border-radius:16px;padding:16px}
+.future-card{background:linear-gradient(135deg,#edf4ff,#f5f1ff);border:1px solid #dbe6ff;border-radius:16px;padding:16px}
+.badge-live{display:inline-block;background:#0f766e;color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:8px}
+.badge-compare{display:inline-block;background:#c2410c;color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:8px}
+.badge-future{display:inline-block;background:#245bd6;color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:8px}
+.live-amount{font-size:28px;font-weight:800;color:#0f5132;margin:4px 0 8px}
+.status-tag{display:inline-block;background:#e0e7ff;color:#3730a3;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;margin-bottom:10px}
+.status-tag.active{background:#dcfce7;color:#166534}
+.status-tag.stop{background:#ffe4e6;color:#be123c}
+.compare-amount{font-size:26px;font-weight:800;color:#344054;margin:6px 0 10px}
+.compare-amount.profit{color:#d92d20}
+.compare-amount.loss{color:#059669}
+.future-amount{font-size:28px;font-weight:800;color:#245bd6;margin:4px 0 10px}
 
-/* 状态提示条 */
-.status-pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;margin-top:6px}
-.status-active{background:#dcfce7;color:#166534}
-.status-paused{background:#fef3c7;color:#b45309}
-.status-holiday{background:#e0e7ff;color:#3730a3}
-
-/* 实时投入与实时收益双栏对比卡片 */
-.live-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.live-box{background:linear-gradient(135deg,#e9fbf3,#eef5ff);border:1px solid #ccebd9;border-radius:15px;padding:15px;display:flex;flex-direction:column;justify-content:space-between}
-.compare-box{background:linear-gradient(135deg,#fff8eb,#fff2f2);border:1px solid #f5dec0;border-radius:15px;padding:15px;display:flex;flex-direction:column;justify-content:space-between}
-.live-badge{display:inline-block;background:#0f766e;color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;margin-bottom:6px}
-.compare-badge{display:inline-block;background:#c2410c;color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;margin-bottom:6px}
-.live-big{font-size:25px;font-weight:800;color:#0f5132;margin:4px 0 8px;overflow-wrap:anywhere}
-.compare-big{font-size:25px;font-weight:800;color:#b42318;margin:4px 0 8px;overflow-wrap:anywhere}
-.compare-big.profit{color:#d92d20}
-.compare-big.loss{color:#059669}
-.compare-big.neutral{color:#344054}
-.compare-input-wrap{margin:4px 0 8px}
-.compare-input-wrap label{margin:0 0 4px;font-size:12px;color:#667085;font-weight:600}
-.compare-input-wrap input{padding:8px 10px;font-size:15px;font-weight:700;border-color:#e6cfa8;background:#fff}
-.compare-input-wrap input:focus{outline:2px solid #fed7aa;border-color:#ea580c}
-
-.metrics{background:linear-gradient(135deg,#edf4ff,#f5f1ff);border-radius:15px;padding:16px}
-.big-label{font-size:13px;color:#596579}
-.big{font-size:29px;font-weight:800;color:#245bd6;margin:4px 0 12px;overflow-wrap:anywhere}
 .metric-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:7px 0;font-size:13.5px}
-.metric-row span{color:#596579;flex-shrink:0}
-.metric-row strong{text-align:right;line-height:1.45}
-.notice{font-size:12px;color:#7a8495;line-height:1.65;margin-top:13px}
-.error{display:none;color:#b42318;background:#fff0f0;border-radius:10px;padding:10px;margin-top:10px;font-size:13px}
+.metric-row span{color:#596579}
+.metric-row strong{text-align:right;color:#172033}
+.skip-detail-box{background:rgba(255,255,255,.72);border-radius:11px;padding:10px 12px;margin:8px 0;border:1px dashed #cbd5e1}
+.skip-sub-row{display:flex;justify-content:space-between;font-size:12.5px;color:#475569;margin:4px 0}
+.skip-sub-row strong{color:#1e293b}
+.skip-dates-wrap{margin-top:8px;padding-top:8px;border-top:1px dashed #e2e8f0;font-size:12px;color:#475569;line-height:1.65;max-height:170px;overflow-y:auto}
+.skip-toggle-btn{background:#f1f5f9;color:#1e293b;border:1px solid #cbd5e1;padding:5px 10px;font-size:12px;border-radius:8px;margin-top:6px}
+
+/* 日历与手动补充休市日 */
+.cal-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0}
+.cal-title{font-size:15px;font-weight:800;color:#172033}
+.cal-weekdays,.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-wd{text-align:center;font-size:12px;font-weight:700;color:#64748b;padding:4px 0}
+.cal-day{min-height:48px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;font-size:12px}
+.cal-day.empty{background:transparent;border-color:transparent;cursor:default}
+.cal-day.closed-wk{background:#f8fafc;color:#64748b}
+.cal-day.closed-cn{background:#fff1f2;border-color:#fecdd3;color:#be123c;font-weight:700}
+.cal-day.closed-us{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;font-weight:700}
+.cal-day.closed-custom{background:#fef3c7;border-color:#fcd34d;color:#92400e;font-weight:700}
+.cal-day.today-mark{box-shadow:inset 0 0 0 2px #10b981}
+.cal-mark{font-size:10px;line-height:1.1}
+.legend-bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:12px;color:#475569}
+.legend-item{display:flex;align-items:center;gap:4px}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.custom-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.custom-pill{display:inline-flex;align-items:center;gap:6px;background:#fef3c7;color:#78350f;border:1px solid #fde68a;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600}
+.custom-pill button{background:transparent;color:#92400e;padding:0;font-size:13px;line-height:1}
+
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:440px}
-th,td{text-align:right;padding:10px 7px;border-bottom:1px solid #edf0f5}
+th,td{text-align:right;padding:9px 6px;border-bottom:1px solid #edf0f5}
 th:first-child,td:first-child{text-align:left}
-th{color:#667085;font-weight:650}
-@media(max-width:540px){
-  .live-grid{grid-template-columns:1fr}
-}
-@media(max-width:380px){
-  .stage-fields,.pause-fields{grid-template-columns:1fr 1fr}
-  .big,.live-big,.compare-big{font-size:23px}
+.error{display:none;color:#b42318;background:#fff0f0;border-radius:10px;padding:10px;margin-top:10px;font-size:13px}
+.fund-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.fund-tab{padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1}
+.fund-tab.active{background:#245bd6;color:#fff;border-color:#245bd6}
+@media(max-width:560px){
+  .grid-3,.event-row-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 <div class="container">
-<header>
-  <h1>📈 分阶段定投计算器（QDII 自包含存档版）</h1>
-  <div class="sub">支持<strong>将数据直接写入 HTML 源码内部</strong>：修改定投阶段、暂停区间或当前市值后，点击“保存并生成新版 HTML 文件”，即可把最新数据打包进文件本身，传到任何新手机或电脑打开都能直接读取！</div>
-</header>
+  <header>
+    <h1>📈 多基金定投时间线计算器 v11</h1>
+    <div class="sub">内置 2026–2027 年国内法定节假日与美股休市日自动标注；支持可视化日历点击标记或手动补充休市日并本地保存。</div>
+  </header>
 
-<!-- 跨设备自包含存档面板 -->
-<section class="panel save-panel">
-  <h2>💾 随身数据封装（跨手机/电脑通用）</h2>
-  <div class="muted">浏览器安全机制不允许网页静默覆盖本地原文件，但本工具支持<strong>“一键导出已写入最新数据的完整 HTML”</strong>（日常修改也会自动暂存在当前手机浏览器中防丢失）。</div>
-  <div class="save-meta" id="saveStatusInfo">当前读取的是：HTML 内置默认配置</div>
-  <button class="save-btn" id="exportHtmlBtn" type="button">📥 将当前数据写入 HTML 并保存新版文件</button>
-  <button class="copy-btn" id="copyHtmlBtn" type="button">📋 无法下载时点此：复制含最新数据的完整 HTML 代码</button>
-  <div class="toast" id="toastMsg"></div>
-</section>
-
-<section class="panel">
-  <h2>① 投资基本设置</h2>
-  <div class="grid">
-    <div>
-      <label for="startDate">开始计算日期</label>
-      <input id="startDate" type="date" value="2026-10-12">
+  <div class="summary-card">
+    <div style="font-size:15px;font-weight:700;margin-bottom:10px">📊 组合总览（共 <span id="totalFundCount">2</span> 只基金）</div>
+    <div class="summary-grid">
+      <div class="summary-item"><div class="s-lbl">组合截至今日累计本金</div><div class="s-val" id="sumActualPrincipal">¥0.00</div></div>
+      <div class="summary-item"><div class="s-lbl">组合截至今日总市值</div><div class="s-val" id="sumCurrentAsset">待填市值</div></div>
+      <div class="summary-item"><div class="s-lbl">组合截至今日实时盈亏</div><div class="s-val" id="sumActualProfit">—</div></div>
+      <div class="summary-item"><div class="s-lbl">组合远期预计总资产</div><div class="s-val" id="sumFutureTotal">¥0.00</div></div>
     </div>
-    <div>
-      <label for="endDate">结束计算日期（远期测算）</label>
-      <input id="endDate" type="date" value="2046-10-12">
-    </div>
+    <div id="perFundBreakdownList" style="margin-top:10px;display:flex;flex-direction:column;gap:6px"></div>
   </div>
-  <label for="rate">假设年化收益率（%，仅用于远期测算）</label>
-  <input id="rate" type="number" min="-99" max="1000" step="0.1" value="10">
 
-  <div class="toggle-row">
-    <div>
-      <div class="t-title">同步剔除美股境外节假日（QDII 基金必开）</div>
-      <div class="t-desc">如 2026-11-26 感恩节美股休市，境内纳斯达克/标普 QDII 暂停申购与定投；开启后自动跳过美股休市日（远期按每年约 235 个双边共同交易日折算）。</div>
+  <section class="panel">
+    <h2>① 定投操作时间线</h2>
+    <div class="muted">点击下方按钮即可新增一条记录；每条记录可随时修改<strong>生效日期、指定基金、每日金额</strong>，或切换为<strong>停止定投</strong>。</div>
+
+    <div class="event-list" id="eventList"></div>
+
+    <div class="timeline-actions">
+      <button class="secondary" id="addInvestEventBtn" type="button">＋ 添加定投 / 调额记录</button>
+      <button class="secondary-stop" id="addStopEventBtn" type="button">🛑 添加停止定投记录</button>
     </div>
-    <label class="switch">
-      <input id="useUsHolidays" type="checkbox" checked>
-      <span class="slider"></span>
-    </label>
-  </div>
-</section>
+    <button class="copy-btn" id="sortEventsBtn" type="button">↕️ 按生效日期排序</button>
+    <button class="copy-btn" id="resetDemoBtn" type="button">↺ 恢复默认示例数据</button>
 
-<section class="panel">
-  <h2>② 设置每个阶段的定投金额</h2>
-  <div class="muted">每行表示从该生效日期开始，每个有效交易日投入对应金额。日期不必按顺序填写，计算时会自动排序。</div>
-  <div id="stages"></div>
-  <button class="secondary" id="addStage" type="button">＋ 添加一个定投阶段</button>
-</section>
+    <div id="error" class="error"></div>
+    <button class="primary" id="calculate" type="button">更新累计投入与收益测算</button>
+  </section>
 
-<section class="panel">
-  <h2>③ 额度不足 / 限购暂停定投区间（可选）</h2>
-  <div class="muted">若因基金限购或额度不够需暂停定投，可在此添加暂停时间段。规则为<strong>左闭右开</strong>：即<strong>暂停开始日当天起停止扣款</strong>，<strong>恢复定投日当天起恢复扣款</strong>（例如：2027-05-05 暂停，2028-05-05 恢复，则 2028-05-05 当天恢复定投）。</div>
-  <div id="pauses"></div>
-  <button class="secondary-warn" id="addPause" type="button">＋ 添加暂停定投区间</button>
+  <section class="panel">
+    <h2>② 基金列表与参数</h2>
+    <div class="fund-tabs" id="fundTabs"></div>
+    <div class="grid-3">
+      <div><label for="fundType">类型</label><select id="fundType"><option value="纳斯达克100">纳斯达克100</option><option value="标普500">标普500</option><option value="其他">其他</option></select></div>
+      <div><label for="fundCode">代码</label><input id="fundCode" type="text" placeholder="如 161130"></div>
+      <div><label for="fundName">名称（自定义）</label><input id="fundName" type="text" placeholder="如 易方达纳指100"></div>
+    </div>
+    <div class="grid" style="margin-top:8px">
+      <div><label for="endDate">截止日期</label><input id="endDate" type="date" value="2046-10-12"></div>
+      <div><label for="rate">年化收益率（%）</label><input id="rate" type="number" step="0.1" value="10"></div>
+    </div>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+      <input id="useUsHolidays" type="checkbox" checked style="width:18px;height:18px">
+      <label for="useUsHolidays" style="margin:0;font-weight:600">剔除美股节假日（QDII）</label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="secondary" id="addFundBtn" type="button" style="flex:1">＋ 新增基金</button>
+      <button class="delete" id="deleteFundBtn" type="button">删除当前基金</button>
+    </div>
+  </section>
 
-  <div id="error" class="error" role="alert"></div>
-  <button class="primary" id="calculate" type="button">更新累计投入与测算</button>
-</section>
+  <section class="panel">
+    <h2>③ 休市日历与手动补充休市日</h2>
+    <div class="muted">自动标出周末、A 股节假日及美股节假日。点击日历中的任意日期可直接切换<strong>手动补充休市日</strong>，或在下栏输入日期快速添加。</div>
 
-<section class="panel">
-  <h2>④ 实时投入与实时收益对比（截至今天）</h2>
-
-  <div class="live-grid">
-    <!-- 左侧：实时累计投入 -->
-    <div class="live-box" aria-live="polite">
-      <div>
-        <div><span class="live-badge">实时投入 · 截至 <span id="todayLabel">今天</span></span></div>
-        <div class="big-label">已累计投入本金（非模拟）</div>
-        <div class="live-big" id="actualPrincipal">—</div>
-        <div id="todayStatusWrap"></div>
-      </div>
-      <div style="margin-top:10px">
-        <div class="metric-row"><span>实际扣款交易日</span><strong id="actualDays">—</strong></div>
-        <div class="metric-row"><span>国内休市跳过</span><strong id="actualCnSkipped">—</strong></div>
-        <div class="metric-row"><span>境外休市跳过</span><strong id="actualUsSkipped">—</strong></div>
-        <div class="metric-row"><span>额度暂停跳过</span><strong id="actualPauseSkipped">—</strong></div>
-        <div class="metric-row"><span>当前阶段日定投</span><strong id="currentDailyAmount">—</strong></div>
-      </div>
+    <div class="cal-toolbar">
+      <button class="chip" id="prevMonthBtn" type="button">◀ 上一月</button>
+      <div class="cal-title" id="calMonthTitle">2026年11月</div>
+      <button class="chip" id="nextMonthBtn" type="button">下一月 ▶</button>
     </div>
 
-    <!-- 右侧：实时收益对比 -->
-    <div class="compare-box" aria-live="polite">
-      <div>
-        <div><span class="compare-badge">实时收益对比（手动填写）</span></div>
-        <div class="compare-input-wrap">
-          <label for="currentAsset">输入当前账户总资产 / 市值（元）</label>
-          <input id="currentAsset" type="number" min="0" step="0.01" placeholder="例如 9800">
+    <div class="cal-weekdays">
+      <div class="cal-wd">日</div><div class="cal-wd">一</div><div class="cal-wd">二</div>
+      <div class="cal-wd">三</div><div class="cal-wd">四</div><div class="cal-wd">五</div><div class="cal-wd">六</div>
+    </div>
+    <div class="cal-days" id="calDays"></div>
+
+    <div class="legend-bar">
+      <span class="legend-item"><i class="dot" style="background:#e2e8f0"></i>周末</span>
+      <span class="legend-item"><i class="dot" style="background:#fecdd3"></i>A股休市</span>
+      <span class="legend-item"><i class="dot" style="background:#bfdbfe"></i>美股休市</span>
+      <span class="legend-item"><i class="dot" style="background:#fcd34d"></i>手动补充休市</span>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <div><label for="customHolidayDate">补充休市日期</label><input id="customHolidayDate" type="date"></div>
+      <div><label for="customHolidayLabel">休市备注（可选）</label><input id="customHolidayLabel" type="text" placeholder="如 临时停牌 / 调休"></div>
+    </div>
+    <button class="secondary" id="addCustomHolidayBtn" type="button" style="width:100%;margin-top:10px">＋ 添加手动补充休市日</button>
+
+    <div style="margin-top:10px;font-size:12.5px;font-weight:700;color:#475569">已手动补充的休市日（点击 × 移除）：</div>
+    <div class="custom-list" id="customHolidayList"></div>
+  </section>
+
+  <section class="panel">
+    <h2>④ 实时投入与实时收益对比（当前：<span id="editingFundLabel"></span>）</h2>
+    <div class="live-stack">
+      <div class="live-card">
+        <div class="badge-live">实时投入 · 截至 <span id="todayLabel"></span></div>
+        <div class="muted">已累计投入本金（非模拟）</div>
+        <div class="live-amount" id="actualPrincipal">¥0.00</div>
+        <div><span class="status-tag" id="todayStatusTag">今日状态：检测中</span></div>
+
+        <div class="metric-row"><span>实际扣款交易日</span><strong id="actualDays">0 个交易日</strong></div>
+        <div class="metric-row"><span>停投期间交易日</span><strong id="actualStoppedDays">0 天</strong></div>
+
+        <div class="skip-detail-box">
+          <div class="metric-row" style="margin:0 0 6px"><span>累计跳过天数明细</span><strong id="actualSkipTotal">0 天</strong></div>
+          <div class="skip-sub-row"><span>· 周末休市跳过</span><strong id="skipWeekendDays">0 天</strong></div>
+          <div class="skip-sub-row"><span>· A 股法定节假日跳过</span><strong id="skipCnHolidayDays">0 天</strong></div>
+          <div class="skip-sub-row"><span>· 境外休市跳过（美股节假日）</span><strong id="skipUsHolidayDays">0 天</strong></div>
+          <div class="skip-sub-row"><span>· 手动补充休市跳过</span><strong id="skipCustomHolidayDays">0 天</strong></div>
+          <button class="skip-toggle-btn" id="toggleSkipDatesBtn" type="button">展开具体跳过日期明细</button>
+          <div class="skip-dates-wrap" id="skipDatesList" style="display:none"></div>
         </div>
-        <div class="big-label">当前实时盈亏（总资产 - 累计本金）</div>
-        <div class="compare-big neutral" id="actualProfit">待输入资产</div>
+
+        <div class="metric-row"><span>当前生效日定投</span><strong id="currentDailyAmount">—</strong></div>
       </div>
-      <div>
+
+      <div class="compare-card">
+        <div class="badge-compare">实时收益对比（手动填写）</div>
+        <label for="currentAsset">输入当前账户总资产 / 市值（元）</label>
+        <input id="currentAsset" type="number" min="0" step="0.01" placeholder="例如 9800">
+        <div class="muted" style="margin-top:10px">当前实时盈亏（总资产 - 累计本金）</div>
+        <div class="compare-amount" id="actualProfit">待输入资产</div>
         <div class="metric-row"><span>累计收益率</span><strong id="actualReturnRate">—</strong></div>
-        <div class="metric-row"><span>对比基准本金</span><strong id="comparePrincipal">—</strong></div>
+        <div class="metric-row"><span>对比基准本金</span><strong id="comparePrincipal">¥0.00</strong></div>
+      </div>
+
+      <div class="future-card">
+        <div class="badge-future">远期预计最终资产（按设定截止日期与收益率模拟）</div>
+        <div class="future-amount" id="total">¥0.00</div>
+        <div class="metric-row"><span>远期累计投入本金</span><strong id="principal">¥0.00</strong></div>
+        <div class="metric-row"><span>远期预估投资收益</span><strong id="profit">¥0.00</strong></div>
+        <div class="metric-row"><span>远期扣款交易日</span><strong id="dayCount">0 天</strong></div>
+        <div class="metric-row"><span>远期停投复利交易日</span><strong id="postStopDayCount">0 天</strong></div>
+        <div class="metric-row"><span>远期国内/手动休市跳过</span><strong id="futureCnSkip">0 天</strong></div>
+        <div class="metric-row"><span>远期境外休市跳过</span><strong id="futureUsSkip">0 天</strong></div>
       </div>
     </div>
-  </div>
 
-  <div class="metrics" aria-live="polite">
-    <div class="big-label">远期预计最终资产（按设定结束日期与收益率模拟）</div>
-    <div class="big" id="total">等待计算</div>
-    <div class="metric-row"><span>远期累计投入本金</span><strong id="principal">—</strong></div>
-    <div class="metric-row"><span>远期预估投资收益</span><strong id="profit">—</strong></div>
-    <div class="metric-row"><span>远期实际扣款交易日</span><strong id="dayCount">—</strong></div>
-    <div class="metric-row"><span>国内休市跳过（周末/法定假日）</span><strong id="cnSkippedTotal">—</strong></div>
-    <div class="metric-row"><span>境外休市跳过（美股节假日）</span><strong id="usSkippedTotal">—</strong></div>
-    <div class="metric-row"><span>因限购/额度暂停跳过</span><strong id="pausedDayCount">—</strong></div>
-    <div class="metric-row"><span>实际采用的年化收益率</span><strong id="usedRate">—</strong></div>
-  </div>
-</section>
-
-<section class="panel">
-  <h2>⑤ 各阶段投入明细（按远期结束日期统计）</h2>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>阶段开始日期</th><th>每日金额</th><th>扣款日数</th><th>暂停跳过</th><th>该阶段本金</th></tr></thead>
-      <tbody id="breakdown"><tr><td colspan="5" class="muted">计算后显示各阶段明细</td></tr></tbody>
-    </table>
-  </div>
-  <div class="notice">
-    规则说明：<br>
-    1. <strong>交易日判断</strong>：国内休市跳过包含周六日及中国 A 股法定节假日休市日（已内置 2026 年元旦、春节、清明、劳动节、端午、中秋、国庆休市安排；调休上班的周末仍按休市处理）。开启“境外节假日”后，将同时自动计算并剔除每年美股纽交所/纳斯达克常规休市日（元旦、马丁路德金日、总统日、耶稣受难日、阵亡将士纪念日、六月节、独立日、劳工节、感恩节、圣诞节）。<br>
-    2. <strong>暂停区间规则</strong>：暂停区间内（含暂停开始日、不含恢复定投日）仅跳过定投扣款，原有持仓资产在交易日仍继续按日复利计算远期收益。<br>
-    3. <strong>自包含存档说明</strong>：点击绿色按钮导出的新 HTML 文件已把你所有的阶段金额、暂停区间、当前市值硬编码进源码中，发送给微信文件传输助手或存入网盘，换任何手机或电脑打开都能直接恢复全部数据。
-  </div>
-</section>
+    <h2 style="margin-top:18px">⑤ 该基金分段明细</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>生效区间</th><th>状态 / 金额</th><th>交易日</th><th>该段本金</th></tr></thead>
+        <tbody id="breakdown"></tbody>
+      </table>
+    </div>
+  </section>
 </div>
 
-<!-- 嵌入式用户数据仓：导出新版 HTML 时会自动更新此标签内的 JSON -->
-<script id="embedded-user-data" type="application/json">
-{
-  "savedAt": "",
-  "startDate": "2026-10-12",
-  "endDate": "2046-10-12",
-  "rate": "10",
-  "useUsHolidays": true,
-  "currentAsset": "",
-  "stages": [
-    { "date": "2026-10-12", "amount": "200" },
-    { "date": "2026-10-13", "amount": "210" }
-  ],
-  "pauses": [
-    { "start": "2027-05-05", "end": "2028-05-05" }
-  ]
-}
-</script>
-
 <script>
-const stagesEl = document.getElementById('stages');
-const pausesEl = document.getElementById('pauses');
-const money = n => new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', maximumFractionDigits: 2 }).format(n);
-const signedMoney = n => (n > 0 ? '+' : '') + money(n);
-const dateText = s => s.replaceAll('-', '/');
-const LOCAL_STORAGE_KEY = 'qdii_dca_calculator_autosave_v1';
+(function() {
+  var STORAGE_KEY = 'multi_fund_dca_v11_state';
+  var skipDatesExpanded = false;
+  var calYear = 2026;
+  var calMonth = 10;
 
-// 2026 年中国 A 股休市日历
-const CHINA_MARKET_HOLIDAYS_2026 = new Set([
-  '2026-01-01', '2026-01-02', '2026-01-03',
-  '2026-02-15', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19',
-  '2026-02-20', '2026-02-21', '2026-02-22', '2026-02-23',
-  '2026-04-04', '2026-04-05', '2026-04-06',
-  '2026-05-01', '2026-05-02', '2026-05-03', '2026-05-04', '2026-05-05',
-  '2026-06-19', '2026-06-20', '2026-06-21',
-  '2026-09-25', '2026-09-26', '2026-09-27',
-  '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04',
-  '2026-10-05', '2026-10-06', '2026-10-07'
-]);
-
-const usHolidayCache = new Map();
-
-function formatIsoUtc(dateUtc) {
-  return dateUtc.toISOString().slice(0, 10);
-}
-
-function getNthWeekdayOfMonth(year, month1Based, weekday, n) {
-  const first = new Date(Date.UTC(year, month1Based - 1, 1));
-  const diff = (weekday - first.getUTCDay() + 7) % 7;
-  const day = 1 + diff + (n - 1) * 7;
-  return new Date(Date.UTC(year, month1Based - 1, day));
-}
-
-function getLastWeekdayOfMonth(year, month1Based, weekday) {
-  const last = new Date(Date.UTC(year, month1Based, 0));
-  const diff = (last.getUTCDay() - weekday + 7) % 7;
-  return new Date(Date.UTC(year, month1Based - 1, last.getUTCDate() - diff));
-}
-
-function observeUsFixedHoliday(year, month1Based, day) {
-  const d = new Date(Date.UTC(year, month1Based - 1, day));
-  const wd = d.getUTCDay();
-  if (wd === 6) d.setUTCDate(d.getUTCDate() - 1);
-  else if (wd === 0) d.setUTCDate(d.getUTCDate() + 1);
-  return d;
-}
-
-function getGoodFriday(year) {
-  const a = year % 19;
-  const b = Math.floor(year / 100);
-  const c = year % 100;
-  const d = Math.floor(b / 4);
-  const e = b % 4;
-  const f = Math.floor((b + 8) / 25);
-  const g = Math.floor((b - f + 1) / 3);
-  const h = (19 * a + b - d - g + 15) % 30;
-  const i = Math.floor(c / 4);
-  const k = c % 4;
-  const l = (32 + 2 * e + 2 * i - h - k) % 7;
-  const m = Math.floor((a + 11 * h + 22 * l) / 451);
-  const month = Math.floor((h + l - 7 * m + 114) / 31);
-  const day = ((h + l - 7 * m + 114) % 31) + 1;
-  const easter = new Date(Date.UTC(year, month - 1, day));
-  easter.setUTCDate(easter.getUTCDate() - 2);
-  return easter;
-}
-
-function getUsMarketHolidays(year) {
-  if (usHolidayCache.has(year)) return usHolidayCache.get(year);
-  const set = new Set();
-  const add = d => set.add(formatIsoUtc(d));
-
-  add(observeUsFixedHoliday(year, 1, 1));
-  const nextJan1 = new Date(Date.UTC(year + 1, 0, 1));
-  if (nextJan1.getUTCDay() === 6) {
-    set.add(`${year}-12-31`);
-  }
-  add(getNthWeekdayOfMonth(year, 1, 1, 3));
-  add(getNthWeekdayOfMonth(year, 2, 1, 3));
-  add(getGoodFriday(year));
-  add(getLastWeekdayOfMonth(year, 5, 1));
-  add(observeUsFixedHoliday(year, 6, 19));
-  add(observeUsFixedHoliday(year, 7, 4));
-  add(getNthWeekdayOfMonth(year, 9, 1, 1));
-  add(getNthWeekdayOfMonth(year, 11, 4, 4));
-  add(observeUsFixedHoliday(year, 12, 25));
-
-  usHolidayCache.set(year, set);
-  return set;
-}
-
-let latestActualPrincipal = 0;
-
-function getTodayIso() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function getNowTimestamp() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  const hh = String(now.getHours()).padStart(2, '0');
-  const mm = String(now.getMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm}`;
-}
-
-function getMarketDayStatus(dateUtc, isoStr, includeUsHolidays) {
-  const day = dateUtc.getUTCDay();
-  if (day === 0 || day === 6) return 'WEEKEND';
-  if (CHINA_MARKET_HOLIDAYS_2026.has(isoStr)) return 'CN_HOLIDAY';
-  if (includeUsHolidays) {
-    const year = dateUtc.getUTCFullYear();
-    if (getUsMarketHolidays(year).has(isoStr)) return 'US_HOLIDAY';
-  }
-  return 'TRADING';
-}
-
-function isDatePaused(isoStr, pauseRanges) {
-  for (const p of pauseRanges) {
-    if (isoStr >= p.start && isoStr < p.end) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function getActiveAmountOnDate(sortedStages, isoStr) {
-  let active = null;
-  for (const s of sortedStages) {
-    if (s.date <= isoStr) active = s.amount;
-    else break;
-  }
-  return active;
-}
-
-function addStage(date = '', amount = '') {
-  const count = stagesEl.children.length + 1;
-  const item = document.createElement('div');
-  item.className = 'stage';
-  item.innerHTML = `
-    <div class="stage-head">
-      <div class="stage-title">定投阶段 ${count}</div>
-      <button class="delete" type="button">删除阶段</button>
-    </div>
-    <div class="stage-fields">
-      <div><label>生效日期</label><input class="stage-date" type="date" value="${date}"></div>
-      <div><label>每日金额（元）</label><input class="stage-amount" type="number" min="0" step="10" value="${amount}" placeholder="例如 210"></div>
-    </div>`;
-  item.querySelector('.delete').addEventListener('click', () => {
-    item.remove();
-    renumberStages();
-    calculate();
-  });
-  item.querySelector('.stage-date').addEventListener('change', calculate);
-  item.querySelector('.stage-amount').addEventListener('input', calculate);
-  stagesEl.appendChild(item);
-  renumberStages();
-}
-
-function renumberStages() {
-  [...stagesEl.children].forEach((el, i) => el.querySelector('.stage-title').textContent = `定投阶段 ${i + 1}`);
-}
-
-function addPause(start = '', end = '') {
-  const count = pausesEl.children.length + 1;
-  const item = document.createElement('div');
-  item.className = 'pause-item';
-  item.innerHTML = `
-    <div class="stage-head">
-      <div class="pause-title">⏸️ 暂停区间 ${count}</div>
-      <button class="delete" type="button">删除区间</button>
-    </div>
-    <div class="pause-fields">
-      <div><label>暂停开始日期（当日停投）</label><input class="pause-start" type="date" value="${start}"></div>
-      <div><label>恢复定投日期（当日恢复）</label><input class="pause-end" type="date" value="${end}"></div>
-    </div>`;
-  item.querySelector('.delete').addEventListener('click', () => {
-    item.remove();
-    renumberPauses();
-    calculate();
-  });
-  item.querySelector('.pause-start').addEventListener('change', calculate);
-  item.querySelector('.pause-end').addEventListener('change', calculate);
-  pausesEl.appendChild(item);
-  renumberPauses();
-}
-
-function renumberPauses() {
-  [...pausesEl.children].forEach((el, i) => el.querySelector('.pause-title').textContent = `⏸️ 暂停区间 ${i + 1}`);
-}
-
-function parseStagesRaw() {
-  return [...stagesEl.children].map(el => ({
-    date: el.querySelector('.stage-date').value,
-    amount: el.querySelector('.stage-amount').value
-  }));
-}
-
-function parseStages() {
-  return [...stagesEl.children].map(el => ({
-    date: el.querySelector('.stage-date').value,
-    amount: Number(el.querySelector('.stage-amount').value)
-  }));
-}
-
-function parsePauses() {
-  return [...pausesEl.children].map(el => ({
-    start: el.querySelector('.pause-start').value,
-    end: el.querySelector('.pause-end').value
-  }));
-}
-
-function collectCurrentState(withTimestamp = false) {
-  return {
-    savedAt: withTimestamp ? getNowTimestamp() : '',
-    startDate: document.getElementById('startDate').value,
-    endDate: document.getElementById('endDate').value,
-    rate: document.getElementById('rate').value,
-    useUsHolidays: document.getElementById('useUsHolidays').checked,
-    currentAsset: document.getElementById('currentAsset').value,
-    stages: parseStagesRaw(),
-    pauses: parsePauses()
+  var CN_HOLIDAYS = {
+    '2026-01-01':'元旦','2026-01-02':'元旦假期','2026-01-03':'元旦假期',
+    '2026-02-15':'春节假期','2026-02-16':'春节假期','2026-02-17':'春节','2026-02-18':'春节假期',
+    '2026-02-19':'春节假期','2026-02-20':'春节假期','2026-02-21':'春节假期','2026-02-22':'春节假期','2026-02-23':'春节假期',
+    '2026-04-04':'清明节','2026-04-05':'清明节假期','2026-04-06':'清明节假期',
+    '2026-05-01':'劳动节','2026-05-02':'劳动节假期','2026-05-03':'劳动节假期','2026-05-04':'劳动节假期','2026-05-05':'劳动节假期',
+    '2026-06-19':'端午节','2026-06-20':'端午节假期','2026-06-21':'端午节假期',
+    '2026-09-25':'中秋节','2026-09-26':'中秋节假期','2026-09-27':'中秋节假期',
+    '2026-10-01':'国庆节','2026-10-02':'国庆节假期','2026-10-03':'国庆节假期','2026-10-04':'国庆节假期',
+    '2026-10-05':'国庆节假期','2026-10-06':'国庆节假期','2026-10-07':'国庆节假期',
+    '2027-01-01':'元旦','2027-01-02':'元旦假期','2027-01-03':'元旦假期',
+    '2027-02-05':'春节假期','2027-02-06':'春节假期','2027-02-07':'春节假期','2027-02-08':'春节假期',
+    '2027-02-09':'春节假期','2027-02-10':'春节假期','2027-02-11':'春节假期','2027-02-12':'春节假期','2027-02-13':'春节假期',
+    '2027-04-03':'清明节假期','2027-04-04':'清明节假期','2027-04-05':'清明节',
+    '2027-05-01':'劳动节','2027-05-02':'劳动节假期','2027-05-03':'劳动节假期','2027-05-04':'劳动节假期','2027-05-05':'劳动节假期',
+    '2027-06-09':'端午节',
+    '2027-09-15':'中秋节',
+    '2027-10-01':'国庆节','2027-10-02':'国庆节假期','2027-10-03':'国庆节假期','2027-10-04':'国庆节假期',
+    '2027-10-05':'国庆节假期','2027-10-06':'国庆节假期','2027-10-07':'国庆节假期'
   };
-}
 
-function autoSaveToBrowser() {
-  try {
-    const state = collectCurrentState(true);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {}
-}
+  var US_HOLIDAYS = {
+    '2026-01-01':'元旦','2026-01-19':'马丁·路德·金纪念日','2026-02-16':'华盛顿诞辰日',
+    '2026-04-03':'耶稣受难日','2026-05-25':'阵亡将士纪念日','2026-06-19':'六月节',
+    '2026-07-03':'独立日休市','2026-09-07':'劳工节','2026-11-26':'感恩节','2026-12-25':'圣诞节',
+    '2027-01-01':'元旦','2027-01-18':'马丁·路德·金纪念日','2027-02-15':'华盛顿诞辰日',
+    '2027-03-26':'耶稣受难日','2027-05-31':'阵亡将士纪念日','2027-06-18':'六月节休市',
+    '2027-07-05':'独立日休市','2027-09-06':'劳工节','2027-11-25':'感恩节','2027-12-24':'圣诞节休市'
+  };
 
-function buildSelfContainedHtml() {
-  const state = collectCurrentState(true);
-  const safeJson = JSON.stringify(state, null, 2).replace(/<\//g, '<\\/');
-
-  const docClone = document.documentElement.cloneNode(true);
-  const dataScript = docClone.querySelector('#embedded-user-data');
-  if (dataScript) {
-    dataScript.textContent = '\n' + safeJson + '\n';
+  function getDefaultState() {
+    return {
+      activeFundId: 'fund_a',
+      funds: [
+        { id: 'fund_a', fundType: '纳斯达克100', fundCode: '161130', fundName: 'A基金', endDate: '2046-10-12', rate: '10', useUsHolidays: true, currentAsset: '' },
+        { id: 'fund_b', fundType: '标普500', fundCode: '050025', fundName: 'B基金', endDate: '2046-10-12', rate: '9', useUsHolidays: true, currentAsset: '' }
+      ],
+      events: [
+        { id: 'ev_1', date: '2026-10-12', fundId: 'fund_a', type: 'invest', amount: '200' },
+        { id: 'ev_2', date: '2026-10-12', fundId: 'fund_b', type: 'invest', amount: '100' }
+      ],
+      customHolidays: {}
+    };
   }
-  const toastEl = docClone.querySelector('#toastMsg');
-  if (toastEl) {
-    toastEl.style.display = 'none';
-    toastEl.textContent = '';
+
+  var state = getDefaultState();
+
+  function todayIso() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
   }
-  return '<!DOCTYPE html>\n' + docClone.outerHTML;
-}
 
-function showToast(msg) {
-  const toast = document.getElementById('toastMsg');
-  toast.textContent = msg;
-  toast.style.display = 'block';
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => {
-    toast.style.display = 'none';
-  }, 5000);
-}
-
-function exportUpdatedHtmlFile() {
-  const fullHtml = buildSelfContainedHtml();
-  const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const today = getTodayIso().replaceAll('-', '');
-  a.href = url;
-  a.download = `定投计算器_存档_${today}.html`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-
-  const nowStr = getNowTimestamp();
-  document.getElementById('saveStatusInfo').textContent = `✅ 已生成新版自包含 HTML 文件（存档时间：${nowStr}），用新文件替换旧文件即可跨设备同步！`;
-  showToast('已触发下载新版 HTML！用它替换旧文件，换任何设备打开都有当前数据。');
-}
-
-async function copyUpdatedHtmlCode() {
-  const fullHtml = buildSelfContainedHtml();
-  try {
-    await navigator.clipboard.writeText(fullHtml);
-    showToast('✅ 已复制含最新数据的完整 HTML 代码！直接粘贴覆盖原文件并保存即可。');
-  } catch (err) {
-    const ta = document.createElement('textarea');
-    ta.value = fullHtml;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('✅ 已复制完整 HTML 代码！直接粘贴覆盖原文件并保存即可。');
+  function fmtMoney(n) {
+    return '¥' + Number(n || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
-}
 
-function loadInitialState() {
-  let embedded = null;
-  try {
-    const raw = document.getElementById('embedded-user-data').textContent.trim();
-    if (raw) embedded = JSON.parse(raw);
-  } catch (e) {}
+  function fmtSignedMoney(n) {
+    var num = Number(n || 0);
+    return (num > 0 ? '+' : '') + fmtMoney(num);
+  }
 
-  let local = null;
-  try {
-    const rawLocal = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (rawLocal) local = JSON.parse(rawLocal);
-  } catch (e) {}
+  function fmtIso(dateObj) {
+    return dateObj.toISOString().slice(0, 10);
+  }
 
-  let chosen = embedded;
-  let sourceDesc = '当前读取的是：HTML 文件内置默认配置';
+  function getNthWeekdayOfMonth(year, month0, weekday0, nth) {
+    var d = new Date(Date.UTC(year, month0, 1));
+    var offset = (weekday0 - d.getUTCDay() + 7) % 7;
+    var day = 1 + offset + (nth - 1) * 7;
+    var check = new Date(Date.UTC(year, month0, day));
+    if (check.getUTCMonth() !== month0) return '';
+    return fmtIso(check);
+  }
 
-  if (embedded && embedded.savedAt) {
-    if (local && local.savedAt && local.savedAt > embedded.savedAt) {
-      chosen = local;
-      sourceDesc = `当前读取的是：本机浏览器自动暂存（${local.savedAt}，比当前文件更新）`;
+  function getLastWeekdayOfMonth(year, month0, weekday0) {
+    var d = new Date(Date.UTC(year, month0 + 1, 0));
+    var offset = (d.getUTCDay() - weekday0 + 7) % 7;
+    d.setUTCDate(d.getUTCDate() - offset);
+    return fmtIso(d);
+  }
+
+  function getAutoUsRuleLabel(year, iso) {
+    var y = Number(year);
+    var mlk = getNthWeekdayOfMonth(y, 0, 1, 3);
+    var pres = getNthWeekdayOfMonth(y, 1, 1, 3);
+    var mem = getLastWeekdayOfMonth(y, 4, 1);
+    var labor = getNthWeekdayOfMonth(y, 8, 1, 1);
+    var thanks = getNthWeekdayOfMonth(y, 10, 4, 4);
+    if (iso === mlk) return '马丁·路德·金日(规则)';
+    if (iso === pres) return '总统日(规则)';
+    if (iso === mem) return '阵亡将士纪念日(规则)';
+    if (iso === labor) return '劳工节(规则)';
+    if (iso === thanks) return '感恩节(规则)';
+    var md = iso.slice(5);
+    if (md === '01-01') return '元旦(规则)';
+    if (md === '07-04') return '独立日(规则)';
+    if (md === '12-25') return '圣诞节(规则)';
+    return '';
+  }
+
+  function getDayReason(dateObj, iso, useUs) {
+    if (state.customHolidays && state.customHolidays[iso]) {
+      return { code: 'CUSTOM_HOLIDAY', label: '手动休市(' + state.customHolidays[iso] + ')' };
+    }
+    var wd = dateObj.getUTCDay();
+    if (wd === 0) return { code: 'WEEKEND', label: '周日休市' };
+    if (wd === 6) return { code: 'WEEKEND', label: '周六休市' };
+    if (CN_HOLIDAYS[iso]) return { code: 'CN_HOLIDAY', label: 'A股休市(' + CN_HOLIDAYS[iso] + ')' };
+    if (useUs) {
+      if (US_HOLIDAYS[iso]) return { code: 'US_HOLIDAY', label: '美股休市(' + US_HOLIDAYS[iso] + ')' };
+      var ruleLbl = getAutoUsRuleLabel(iso.slice(0, 4), iso);
+      if (ruleLbl) return { code: 'US_HOLIDAY', label: '美股休市(' + ruleLbl + ')' };
+    }
+    return { code: 'TRADING', label: '正常交易日' };
+  }
+
+  function getFundName(f) {
+    if (!f) return '未命名基金';
+    return (f.fundName || f.fundCode || f.fundType || '基金').trim();
+  }
+
+  function getActiveFund() {
+    var i;
+    for (i = 0; i < state.funds.length; i++) {
+      if (state.funds[i].id === state.activeFundId) return state.funds[i];
+    }
+    if (state.funds.length > 0) {
+      state.activeFundId = state.funds[0].id;
+      return state.funds[0];
+    }
+    return null;
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {}
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.funds) && parsed.funds.length > 0 && Array.isArray(parsed.events)) {
+          state = parsed;
+          if (!state.customHolidays || typeof state.customHolidays !== 'object') {
+            state.customHolidays = {};
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
+  function syncFundInputsToState() {
+    var f = getActiveFund();
+    if (!f) return;
+    f.fundType = document.getElementById('fundType').value;
+    f.fundCode = document.getElementById('fundCode').value;
+    f.fundName = document.getElementById('fundName').value;
+    f.endDate = document.getElementById('endDate').value || '2046-10-12';
+    f.rate = document.getElementById('rate').value || '10';
+    f.useUsHolidays = document.getElementById('useUsHolidays').checked;
+    f.currentAsset = document.getElementById('currentAsset').value;
+  }
+
+  function loadFundToInputs() {
+    var f = getActiveFund();
+    if (!f) return;
+    document.getElementById('fundType').value = f.fundType || '纳斯达克100';
+    document.getElementById('fundCode').value = f.fundCode || '';
+    document.getElementById('fundName').value = f.fundName || '';
+    document.getElementById('endDate').value = f.endDate || '2046-10-12';
+    document.getElementById('rate').value = f.rate !== undefined ? f.rate : '10';
+    document.getElementById('useUsHolidays').checked = !!f.useUsHolidays;
+    document.getElementById('currentAsset').value = f.currentAsset !== undefined ? f.currentAsset : '';
+    document.getElementById('editingFundLabel').textContent = getFundName(f);
+  }
+
+  function renderFunds() {
+    var tabs = document.getElementById('fundTabs');
+    tabs.innerHTML = '';
+    var i;
+    for (i = 0; i < state.funds.length; i++) {
+      (function(fund) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'fund-tab' + (fund.id === state.activeFundId ? ' active' : '');
+        btn.textContent = getFundName(fund);
+        btn.onclick = function() {
+          syncFundInputsToState();
+          state.activeFundId = fund.id;
+          loadFundToInputs();
+          renderFunds();
+          renderEvents();
+          recalcAll();
+        };
+        tabs.appendChild(btn);
+      })(state.funds[i]);
+    }
+    var active = getActiveFund();
+    document.getElementById('editingFundLabel').textContent = getFundName(active);
+  }
+
+  function renderEvents() {
+    var list = document.getElementById('eventList');
+    list.innerHTML = '';
+    if (!state.events.length) {
+      list.innerHTML = '<div class="muted" style="padding:12px;text-align:center;border:1px dashed #cbd5e1;border-radius:12px">暂无记录，点击下方按钮添加。</div>';
+      return;
+    }
+
+    var i;
+    for (i = 0; i < state.events.length; i++) {
+      (function(ev, idx) {
+        var isStop = ev.type === 'stop';
+        var card = document.createElement('div');
+        card.className = 'event-card ' + (isStop ? 'stop' : 'invest');
+
+        var top = document.createElement('div');
+        top.className = 'event-top';
+
+        var badge = document.createElement('span');
+        badge.className = 'event-badge ' + (isStop ? 'stop' : 'invest');
+        badge.textContent = isStop ? '🛑 停止定投（停止扣款）' : '🟢 定投 / 调额';
+
+        var rightBtns = document.createElement('div');
+        rightBtns.style.display = 'flex';
+        rightBtns.style.gap = '6px';
+
+        var toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'chip';
+        toggleBtn.textContent = isStop ? '改为定投' : '改为停止';
+        toggleBtn.onclick = function() {
+          ev.type = isStop ? 'invest' : 'stop';
+          if (ev.type === 'invest' && (!ev.amount || Number(ev.amount) <= 0)) ev.amount = '200';
+          renderEvents();
+          recalcAll();
+        };
+
+        var delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'delete';
+        delBtn.textContent = '删除';
+        delBtn.onclick = function() {
+          state.events.splice(idx, 1);
+          renderEvents();
+          recalcAll();
+        };
+
+        rightBtns.appendChild(toggleBtn);
+        rightBtns.appendChild(delBtn);
+        top.appendChild(badge);
+        top.appendChild(rightBtns);
+
+        var grid = document.createElement('div');
+        grid.className = 'event-row-grid';
+
+        var col1 = document.createElement('div');
+        var lbl1 = document.createElement('label');
+        lbl1.textContent = '生效日期';
+        var inpDate = document.createElement('input');
+        inpDate.type = 'date';
+        inpDate.value = ev.date || todayIso();
+        inpDate.onchange = function() {
+          ev.date = inpDate.value;
+          recalcAll();
+        };
+        col1.appendChild(lbl1);
+        col1.appendChild(inpDate);
+
+        var col2 = document.createElement('div');
+        var lbl2 = document.createElement('label');
+        lbl2.textContent = '指定基金';
+        var selFund = document.createElement('select');
+        var j;
+        for (j = 0; j < state.funds.length; j++) {
+          var opt = document.createElement('option');
+          opt.value = state.funds[j].id;
+          opt.textContent = getFundName(state.funds[j]);
+          if (state.funds[j].id === ev.fundId) opt.selected = true;
+          selFund.appendChild(opt);
+        }
+        selFund.onchange = function() {
+          ev.fundId = selFund.value;
+          recalcAll();
+        };
+        col2.appendChild(lbl2);
+        col2.appendChild(selFund);
+
+        var col3 = document.createElement('div');
+        var lbl3 = document.createElement('label');
+        lbl3.textContent = isStop ? '状态' : '每日定投金额（元）';
+        col3.appendChild(lbl3);
+        if (isStop) {
+          var ph = document.createElement('div');
+          ph.className = 'stop-placeholder';
+          ph.textContent = '停止定投（¥0/日）';
+          col3.appendChild(ph);
+        } else {
+          var inpAmt = document.createElement('input');
+          inpAmt.type = 'number';
+          inpAmt.min = '0';
+          inpAmt.step = '10';
+          inpAmt.value = ev.amount !== undefined ? ev.amount : '200';
+          inpAmt.oninput = function() {
+            ev.amount = inpAmt.value;
+            recalcAll();
+          };
+          col3.appendChild(inpAmt);
+        }
+
+        grid.appendChild(col1);
+        grid.appendChild(col2);
+        grid.appendChild(col3);
+
+        card.appendChild(top);
+        card.appendChild(grid);
+        list.appendChild(card);
+      })(state.events[i], i);
+    }
+  }
+
+  function renderCalendarAndCustomHolidays() {
+    var active = getActiveFund();
+    var useUs = active ? !!active.useUsHolidays : true;
+    var tStr = todayIso();
+
+    document.getElementById('calMonthTitle').textContent = calYear + '年' + (calMonth + 1) + '月';
+    var daysBox = document.getElementById('calDays');
+    daysBox.innerHTML = '';
+
+    var firstDay = new Date(Date.UTC(calYear, calMonth, 1));
+    var startWd = firstDay.getUTCDay();
+    var totalDays = new Date(Date.UTC(calYear, calMonth + 1, 0)).getUTCDate();
+
+    var i;
+    for (i = 0; i < startWd; i++) {
+      var emptyCell = document.createElement('div');
+      emptyCell.className = 'cal-day empty';
+      daysBox.appendChild(emptyCell);
+    }
+
+    for (i = 1; i <= totalDays; i++) {
+      (function(dayNum) {
+        var dObj = new Date(Date.UTC(calYear, calMonth, dayNum));
+        var iso = fmtIso(dObj);
+        var info = getDayReason(dObj, iso, useUs);
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cal-day';
+        if (iso === tStr) btn.className += ' today-mark';
+
+        var markText = '';
+        if (info.code === 'CUSTOM_HOLIDAY') {
+          btn.className += ' closed-custom';
+          markText = '补充休';
+        } else if (info.code === 'CN_HOLIDAY') {
+          btn.className += ' closed-cn';
+          markText = 'A股休';
+        } else if (info.code === 'US_HOLIDAY') {
+          btn.className += ' closed-us';
+          markText = '美股休';
+        } else if (info.code === 'WEEKEND') {
+          btn.className += ' closed-wk';
+          markText = '周末';
+        }
+
+        btn.innerHTML = '<span>' + dayNum + '</span>' + (markText ? '<span class="cal-mark">' + markText + '</span>' : '');
+        btn.title = iso + ' · ' + info.label + '（点击切换手动补充休市）';
+        btn.onclick = function() {
+          if (state.customHolidays[iso]) {
+            delete state.customHolidays[iso];
+          } else {
+            state.customHolidays[iso] = '手动补充休市';
+          }
+          renderCalendarAndCustomHolidays();
+          recalcAll();
+        };
+        daysBox.appendChild(btn);
+      })(i);
+    }
+
+    var listEl = document.getElementById('customHolidayList');
+    listEl.innerHTML = '';
+    var keys = Object.keys(state.customHolidays || {}).sort();
+    if (!keys.length) {
+      listEl.innerHTML = '<span class="muted">暂无手动补充休市日。</span>';
+      return;
+    }
+    for (i = 0; i < keys.length; i++) {
+      (function(k) {
+        var pill = document.createElement('span');
+        pill.className = 'custom-pill';
+        pill.textContent = k + ' · ' + state.customHolidays[k];
+        var rm = document.createElement('button');
+        rm.type = 'button';
+        rm.textContent = '×';
+        rm.onclick = function() {
+          delete state.customHolidays[k];
+          renderCalendarAndCustomHolidays();
+          recalcAll();
+        };
+        pill.appendChild(rm);
+        listEl.appendChild(pill);
+      })(keys[i]);
+    }
+  }
+
+  function calcSingleFund(fund, todayStr) {
+    var evs = [];
+    var i;
+    for (i = 0; i < state.events.length; i++) {
+      if (state.events[i].fundId === fund.id && state.events[i].date) {
+        evs.push({ id: state.events[i].id, date: state.events[i].date, type: state.events[i].type, amount: Number(state.events[i].amount || 0), order: i });
+      }
+    }
+    evs.sort(function(a, b) {
+      if (a.date < b.date) return -1;
+      if (a.date > b.date) return 1;
+      return a.order - b.order;
+    });
+
+    var endStr = fund.endDate || '2046-10-12';
+    var rate = Number(fund.rate || 10);
+    var useUs = !!fund.useUsHolidays;
+    var daysPerYear = useUs ? 235 : 242;
+    var dailyRate = Math.pow(1 + rate / 100, 1 / daysPerYear) - 1;
+
+    if (!evs.length) {
+      return {
+        evs: [],
+        actualPrincipal: 0, actualDays: 0, actualStoppedDays: 0,
+        weekendSkipped: 0, cnHolidaySkipped: 0, usHolidaySkipped: 0, customHolidaySkipped: 0,
+        skippedItems: [],
+        futureTotal: 0, futurePrincipal: 0, futureDays: 0, futureStoppedDays: 0,
+        futureCnSkip: 0, futureUsSkip: 0, segments: []
+      };
+    }
+
+    var firstDate = evs[0].date;
+    var actualPrincipal = 0;
+    var actualDays = 0;
+    var actualStoppedDays = 0;
+    var weekendSkipped = 0;
+    var cnHolidaySkipped = 0;
+    var usHolidaySkipped = 0;
+    var customHolidaySkipped = 0;
+    var skippedItems = [];
+
+    if (todayStr >= firstDate) {
+      var cur = new Date(firstDate + 'T00:00:00Z');
+      var endToday = new Date(todayStr + 'T00:00:00Z');
+      var idx = 0;
+      while (cur <= endToday) {
+        var iso = fmtIso(cur);
+        while (idx + 1 < evs.length && evs[idx + 1].date <= iso) idx++;
+        var rInfo = getDayReason(cur, iso, useUs);
+        if (rInfo.code === 'WEEKEND') {
+          weekendSkipped++;
+          skippedItems.push(iso + ' ' + rInfo.label);
+        } else if (rInfo.code === 'CN_HOLIDAY') {
+          cnHolidaySkipped++;
+          skippedItems.push(iso + ' ' + rInfo.label);
+        } else if (rInfo.code === 'US_HOLIDAY') {
+          usHolidaySkipped++;
+          skippedItems.push(iso + ' ' + rInfo.label);
+        } else if (rInfo.code === 'CUSTOM_HOLIDAY') {
+          customHolidaySkipped++;
+          skippedItems.push(iso + ' ' + rInfo.label);
+        } else {
+          if (evs[idx].type === 'stop' || evs[idx].amount <= 0) {
+            actualStoppedDays++;
+          } else {
+            actualPrincipal += evs[idx].amount;
+            actualDays++;
+          }
+        }
+        cur.setUTCDate(cur.getUTCDate() + 1);
+      }
+    }
+
+    var segments = [];
+    for (i = 0; i < evs.length; i++) {
+      var segEnd = endStr;
+      if (i + 1 < evs.length) {
+        var nd = new Date(evs[i + 1].date + 'T00:00:00Z');
+        nd.setUTCDate(nd.getUTCDate() - 1);
+        var prevIso = fmtIso(nd);
+        segEnd = prevIso < endStr ? prevIso : endStr;
+      }
+      segments.push({
+        start: evs[i].date,
+        end: segEnd,
+        type: evs[i].type,
+        amount: evs[i].type === 'stop' ? 0 : evs[i].amount,
+        days: 0,
+        principal: 0
+      });
+    }
+
+    var futureTotal = 0;
+    var futurePrincipal = 0;
+    var futureDays = 0;
+    var futureStoppedDays = 0;
+    var futureCnSkip = 0;
+    var futureUsSkip = 0;
+
+    if (endStr >= firstDate) {
+      var fCur = new Date(firstDate + 'T00:00:00Z');
+      var fEnd = new Date(endStr + 'T00:00:00Z');
+      var fIdx = 0;
+      while (fCur <= fEnd) {
+        var fIso = fmtIso(fCur);
+        while (fIdx + 1 < evs.length && evs[fIdx + 1].date <= fIso) fIdx++;
+        var fInfo = getDayReason(fCur, fIso, useUs);
+        if (fInfo.code === 'WEEKEND' || fInfo.code === 'CN_HOLIDAY' || fInfo.code === 'CUSTOM_HOLIDAY') {
+          futureCnSkip++;
+        } else if (fInfo.code === 'US_HOLIDAY') {
+          futureUsSkip++;
+        } else {
+          futureTotal *= (1 + dailyRate);
+          segments[fIdx].days++;
+          if (segments[fIdx].type !== 'stop' && segments[fIdx].amount > 0) {
+            futureTotal += segments[fIdx].amount;
+            futurePrincipal += segments[fIdx].amount;
+            segments[fIdx].principal += segments[fIdx].amount;
+            futureDays++;
+          } else {
+            futureStoppedDays++;
+          }
+        }
+        fCur.setUTCDate(fCur.getUTCDate() + 1);
+      }
+    }
+
+    return {
+      evs: evs,
+      actualPrincipal: actualPrincipal,
+      actualDays: actualDays,
+      actualStoppedDays: actualStoppedDays,
+      weekendSkipped: weekendSkipped,
+      cnHolidaySkipped: cnHolidaySkipped,
+      usHolidaySkipped: usHolidaySkipped,
+      customHolidaySkipped: customHolidaySkipped,
+      skippedItems: skippedItems,
+      futureTotal: futureTotal,
+      futurePrincipal: futurePrincipal,
+      futureDays: futureDays,
+      futureStoppedDays: futureStoppedDays,
+      futureCnSkip: futureCnSkip,
+      futureUsSkip: futureUsSkip,
+      segments: segments
+    };
+  }
+
+  function updateCompareCard(actualPrincipal) {
+    var rawVal = document.getElementById('currentAsset').value.trim();
+    var profitEl = document.getElementById('actualProfit');
+    var rateEl = document.getElementById('actualReturnRate');
+    document.getElementById('comparePrincipal').textContent = fmtMoney(actualPrincipal);
+
+    if (rawVal === '') {
+      profitEl.textContent = '待输入资产';
+      profitEl.className = 'compare-amount';
+      rateEl.textContent = '—';
+      return null;
+    }
+
+    var asset = Number(rawVal);
+    if (!Number.isFinite(asset) || asset < 0) {
+      profitEl.textContent = '输入无效';
+      profitEl.className = 'compare-amount';
+      rateEl.textContent = '—';
+      return null;
+    }
+
+    var diff = asset - actualPrincipal;
+    profitEl.textContent = fmtSignedMoney(diff);
+    if (diff > 0) profitEl.className = 'compare-amount profit';
+    else if (diff < 0) profitEl.className = 'compare-amount loss';
+    else profitEl.className = 'compare-amount';
+
+    if (actualPrincipal > 0) {
+      var pct = (diff / actualPrincipal) * 100;
+      rateEl.textContent = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
     } else {
-      sourceDesc = `当前读取的是：本 HTML 文件内置存档（封装时间：${embedded.savedAt}）`;
+      rateEl.textContent = asset > 0 ? '本金为0' : '0.00%';
     }
-  } else if (local && local.savedAt) {
-    chosen = local;
-    sourceDesc = `当前读取的是：本机浏览器自动暂存（${local.savedAt}，点击下方绿色按钮可写入文件带走）`;
+    return asset;
   }
 
-  document.getElementById('saveStatusInfo').textContent = sourceDesc;
+  function recalcAll() {
+    syncFundInputsToState();
+    saveState();
 
-  if (!chosen) return;
-  if (chosen.startDate) document.getElementById('startDate').value = chosen.startDate;
-  if (chosen.endDate) document.getElementById('endDate').value = chosen.endDate;
-  if (chosen.rate !== undefined && chosen.rate !== '') document.getElementById('rate').value = chosen.rate;
-  if (typeof chosen.useUsHolidays === 'boolean') document.getElementById('useUsHolidays').checked = chosen.useUsHolidays;
-  if (chosen.currentAsset !== undefined) document.getElementById('currentAsset').value = chosen.currentAsset;
+    var tStr = todayIso();
+    document.getElementById('todayLabel').textContent = tStr.replaceAll('-', '/');
+    document.getElementById('totalFundCount').textContent = String(state.funds.length);
 
-  stagesEl.innerHTML = '';
-  if (Array.isArray(chosen.stages) && chosen.stages.length > 0) {
-    chosen.stages.forEach(s => addStage(s.date || '', s.amount ?? ''));
-  } else {
-    addStage('2026-10-12', '200');
-  }
-
-  pausesEl.innerHTML = '';
-  if (Array.isArray(chosen.pauses)) {
-    chosen.pauses.forEach(p => addPause(p.start || '', p.end || ''));
-  }
-}
-
-function updateRealtimeComparison() {
-  const rawVal = document.getElementById('currentAsset').value.trim();
-  const profitEl = document.getElementById('actualProfit');
-  const rateEl = document.getElementById('actualReturnRate');
-  document.getElementById('comparePrincipal').textContent = money(latestActualPrincipal);
-
-  autoSaveToBrowser();
-
-  if (rawVal === '') {
-    profitEl.textContent = '待输入资产';
-    profitEl.className = 'compare-big neutral';
-    rateEl.textContent = '—';
-    return;
-  }
-
-  const currentAsset = Number(rawVal);
-  if (!Number.isFinite(currentAsset) || currentAsset < 0) {
-    profitEl.textContent = '输入无效';
-    profitEl.className = 'compare-big neutral';
-    rateEl.textContent = '—';
-    return;
-  }
-
-  const diff = currentAsset - latestActualPrincipal;
-  profitEl.textContent = signedMoney(diff);
-
-  if (diff > 0) {
-    profitEl.className = 'compare-big profit';
-  } else if (diff < 0) {
-    profitEl.className = 'compare-big loss';
-  } else {
-    profitEl.className = 'compare-big neutral';
-  }
-
-  if (latestActualPrincipal > 0) {
-    const returnPct = (diff / latestActualPrincipal) * 100;
-    const prefix = returnPct > 0 ? '+' : '';
-    rateEl.textContent = `${prefix}${returnPct.toFixed(2)}%`;
-  } else {
-    rateEl.textContent = currentAsset > 0 ? '本金为 0' : '0.00%';
-  }
-}
-
-function calculateActualToToday(sortedStages, pauseRanges, startStr, todayStr, includeUsHolidays) {
-  document.getElementById('todayLabel').textContent = dateText(todayStr);
-
-  const todayDateObj = new Date(todayStr + 'T00:00:00Z');
-  const todayMarketStatus = getMarketDayStatus(todayDateObj, todayStr, includeUsHolidays);
-  const todayPaused = isDatePaused(todayStr, pauseRanges);
-  const currentAmt = getActiveAmountOnDate(sortedStages, todayStr);
-
-  const statusWrap = document.getElementById('todayStatusWrap');
-  if (todayPaused) {
-    statusWrap.innerHTML = `<span class="status-pill status-paused">今日状态：额度不足暂停定投中</span>`;
-    document.getElementById('currentDailyAmount').textContent = '暂停中（原定 ' + (currentAmt !== null ? money(currentAmt) : '—') + '）';
-  } else if (todayMarketStatus === 'US_HOLIDAY') {
-    statusWrap.innerHTML = `<span class="status-pill status-holiday">今日状态：境外节假日休市 · 暂停申购</span>`;
-    document.getElementById('currentDailyAmount').textContent = '今日休市暂停（' + (currentAmt !== null ? money(currentAmt) : '—') + '）';
-  } else if (todayMarketStatus === 'CN_HOLIDAY' || todayMarketStatus === 'WEEKEND') {
-    statusWrap.innerHTML = `<span class="status-pill status-holiday">今日状态：A 股非交易日休市</span>`;
-    document.getElementById('currentDailyAmount').textContent = currentAmt === null ? '尚未生效' : money(currentAmt) + ' / 交易日';
-  } else {
-    statusWrap.innerHTML = `<span class="status-pill status-active">今日状态：正常交易定投日</span>`;
-    document.getElementById('currentDailyAmount').textContent = currentAmt === null ? '尚未生效' : money(currentAmt) + ' / 交易日';
-  }
-
-  if (todayStr < startStr) {
-    latestActualPrincipal = 0;
-    document.getElementById('actualPrincipal').textContent = money(0);
-    document.getElementById('actualDays').textContent = '0 天（开始日期晚于今天）';
-    document.getElementById('actualCnSkipped').textContent = '0 天';
-    document.getElementById('actualUsSkipped').textContent = '0 天';
-    document.getElementById('actualPauseSkipped').textContent = '0 天';
-    updateRealtimeComparison();
-    return;
-  }
-
-  let actualPrincipal = 0;
-  let actualDays = 0;
-  let cnWeekendSkipped = 0;
-  let cnHolidaySkipped = 0;
-  let usHolidaySkipped = 0;
-  let pausedSkipped = 0;
-
-  const start = new Date(startStr + 'T00:00:00Z');
-  const endToday = new Date(todayStr + 'T00:00:00Z');
-
-  for (let d = new Date(start); d <= endToday; d.setUTCDate(d.getUTCDate() + 1)) {
-    const iso = formatIsoUtc(d);
-    const status = getMarketDayStatus(d, iso, includeUsHolidays);
-    if (status === 'WEEKEND') {
-      cnWeekendSkipped++;
-      continue;
+    var sumAct = 0;
+    var sumFut = 0;
+    var sumAsset = 0;
+    var hasAsset = false;
+    var listHtml = '';
+    var i;
+    for (i = 0; i < state.funds.length; i++) {
+      var f = state.funds[i];
+      var r = calcSingleFund(f, tStr);
+      sumAct += r.actualPrincipal;
+      sumFut += r.futureTotal;
+      var fAssetRaw = (f.currentAsset || '').toString().trim();
+      if (fAssetRaw !== '' && Number.isFinite(Number(fAssetRaw)) && Number(fAssetRaw) >= 0) {
+        sumAsset += Number(fAssetRaw);
+        hasAsset = true;
+      }
+      listHtml += '<div style="display:flex;justify-content:space-between;background:rgba(255,255,255,.07);padding:7px 10px;border-radius:8px;font-size:12.5px">' +
+        '<strong>' + getFundName(f) + '</strong>' +
+        '<span>已投 ' + fmtMoney(r.actualPrincipal) + '</span>' +
+        '</div>';
     }
-    if (status === 'CN_HOLIDAY') {
-      cnHolidaySkipped++;
-      continue;
+    document.getElementById('sumActualPrincipal').textContent = fmtMoney(sumAct);
+    document.getElementById('sumFutureTotal').textContent = fmtMoney(sumFut);
+    if (hasAsset) {
+      document.getElementById('sumCurrentAsset').textContent = fmtMoney(sumAsset);
+      document.getElementById('sumActualProfit').textContent = fmtSignedMoney(sumAsset - sumAct);
+    } else {
+      document.getElementById('sumCurrentAsset').textContent = '待填市值';
+      document.getElementById('sumActualProfit').textContent = '—';
     }
-    if (status === 'US_HOLIDAY') {
-      usHolidaySkipped++;
-      continue;
-    }
-    const amt = getActiveAmountOnDate(sortedStages, iso);
-    if (amt !== null) {
-      if (isDatePaused(iso, pauseRanges)) {
-        pausedSkipped++;
+    document.getElementById('perFundBreakdownList').innerHTML = listHtml;
+
+    var active = getActiveFund();
+    if (active) {
+      var ar = calcSingleFund(active, tStr);
+      document.getElementById('actualPrincipal').textContent = fmtMoney(ar.actualPrincipal);
+      document.getElementById('actualDays').textContent = ar.actualDays + ' 个交易日';
+      document.getElementById('actualStoppedDays').textContent = ar.actualStoppedDays + ' 天';
+
+      var totalSkip = ar.weekendSkipped + ar.cnHolidaySkipped + ar.usHolidaySkipped + ar.customHolidaySkipped;
+      document.getElementById('actualSkipTotal').textContent = totalSkip + ' 天';
+      document.getElementById('skipWeekendDays').textContent = ar.weekendSkipped + ' 天';
+      document.getElementById('skipCnHolidayDays').textContent = ar.cnHolidaySkipped + ' 天';
+      document.getElementById('skipUsHolidayDays').textContent = ar.usHolidaySkipped + ' 天';
+      document.getElementById('skipCustomHolidayDays').textContent = ar.customHolidaySkipped + ' 天';
+
+      var skipListEl = document.getElementById('skipDatesList');
+      if (!ar.skippedItems.length) {
+        skipListEl.textContent = '当前时间段内暂无跳过日期。';
       } else {
-        actualPrincipal += amt;
-        actualDays++;
+        skipListEl.textContent = ar.skippedItems.join('；');
+      }
+
+      var activeTodayEv = null;
+      for (i = 0; i < ar.evs.length; i++) {
+        if (ar.evs[i].date <= tStr) activeTodayEv = ar.evs[i];
+        else break;
+      }
+      var statusEl = document.getElementById('todayStatusTag');
+      var curAmtEl = document.getElementById('currentDailyAmount');
+      var tObj = new Date(tStr + 'T00:00:00Z');
+      var tInfo = getDayReason(tObj, tStr, !!active.useUsHolidays);
+
+      if (!activeTodayEv) {
+        statusEl.textContent = '今日状态：尚未开始定投';
+        statusEl.className = 'status-tag';
+        curAmtEl.textContent = '尚未开始';
+      } else if (activeTodayEv.type === 'stop' || activeTodayEv.amount <= 0) {
+        statusEl.textContent = '今日状态：已停止定投 · 持仓复利中';
+        statusEl.className = 'status-tag stop';
+        curAmtEl.textContent = '停止定投 (¥0)';
+      } else if (tInfo.code === 'CUSTOM_HOLIDAY') {
+        statusEl.textContent = '今日状态：手动补充休市日';
+        statusEl.className = 'status-tag';
+        curAmtEl.textContent = fmtMoney(activeTodayEv.amount) + ' / 交易日';
+      } else if (tInfo.code === 'WEEKEND' || tInfo.code === 'CN_HOLIDAY') {
+        statusEl.textContent = '今日状态：A 股非交易日休市';
+        statusEl.className = 'status-tag';
+        curAmtEl.textContent = fmtMoney(activeTodayEv.amount) + ' / 交易日';
+      } else if (tInfo.code === 'US_HOLIDAY') {
+        statusEl.textContent = '今日状态：境外休市（美股节假日）';
+        statusEl.className = 'status-tag';
+        curAmtEl.textContent = fmtMoney(activeTodayEv.amount) + ' / 交易日';
+      } else {
+        statusEl.textContent = '今日状态：正常交易定投日';
+        statusEl.className = 'status-tag active';
+        curAmtEl.textContent = fmtMoney(activeTodayEv.amount) + ' / 交易日';
+      }
+
+      updateCompareCard(ar.actualPrincipal);
+
+      document.getElementById('total').textContent = fmtMoney(ar.futureTotal);
+      document.getElementById('principal').textContent = fmtMoney(ar.futurePrincipal);
+      document.getElementById('profit').textContent = fmtMoney(ar.futureTotal - ar.futurePrincipal);
+      document.getElementById('dayCount').textContent = ar.futureDays + ' 天';
+      document.getElementById('postStopDayCount').textContent = ar.futureStoppedDays + ' 天';
+      document.getElementById('futureCnSkip').textContent = ar.futureCnSkip + ' 天';
+      document.getElementById('futureUsSkip').textContent = ar.futureUsSkip + ' 天';
+
+      var tbody = document.getElementById('breakdown');
+      if (!ar.segments.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="muted">暂无分段</td></tr>';
+      } else {
+        var rows = '';
+        for (i = 0; i < ar.segments.length; i++) {
+          var s = ar.segments[i];
+          var range = s.start === s.end ? s.start : (s.start + ' ~ ' + s.end);
+          var stText = (s.type === 'stop' || s.amount <= 0) ? '🛑 停止定投' : ('🟢 ' + fmtMoney(s.amount) + '/日');
+          rows += '<tr><td>' + range + '</td><td>' + stText + '</td><td>' + s.days + ' 天</td><td>' + fmtMoney(s.principal) + '</td></tr>';
+        }
+        tbody.innerHTML = rows;
       }
     }
   }
 
-  const cnTotalSkipped = cnWeekendSkipped + cnHolidaySkipped;
-  latestActualPrincipal = actualPrincipal;
-  document.getElementById('actualPrincipal').textContent = money(actualPrincipal);
-  document.getElementById('actualDays').textContent = actualDays.toLocaleString('zh-CN') + ' 个交易日';
-
-  if (cnTotalSkipped > 0) {
-    const subParts = [];
-    if (cnWeekendSkipped > 0) subParts.push(`周末${cnWeekendSkipped}`);
-    if (cnHolidaySkipped > 0) subParts.push(`节日${cnHolidaySkipped}`);
-    document.getElementById('actualCnSkipped').textContent = `${cnTotalSkipped} 天（${subParts.join('/')}）`;
-  } else {
-    document.getElementById('actualCnSkipped').textContent = '0 天';
+  function addEvent(evType) {
+    var targetFund = getActiveFund();
+    var fid = targetFund ? targetFund.id : 'fund_a';
+    state.events.push({
+      id: 'ev_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
+      date: todayIso(),
+      fundId: fid,
+      type: evType,
+      amount: evType === 'stop' ? '0' : '200'
+    });
+    renderEvents();
+    recalcAll();
   }
 
-  document.getElementById('actualUsSkipped').textContent = `${usHolidaySkipped} 天`;
-  document.getElementById('actualPauseSkipped').textContent = `${pausedSkipped} 天`;
+  function init() {
+    loadState();
+    var now = new Date();
+    calYear = now.getFullYear();
+    calMonth = now.getMonth();
+    document.getElementById('customHolidayDate').value = todayIso();
 
-  updateRealtimeComparison();
-}
+    renderFunds();
+    loadFundToInputs();
+    renderEvents();
+    renderCalendarAndCustomHolidays();
+    recalcAll();
 
-function calculate() {
-  const error = document.getElementById('error');
-  error.style.display = 'none';
-  const startStr = document.getElementById('startDate').value;
-  const endStr = document.getElementById('endDate').value;
-  const annualRate = Number(document.getElementById('rate').value);
-  const includeUsHolidays = document.getElementById('useUsHolidays').checked;
-  const stages = parseStages();
-  const pauses = parsePauses();
-  const todayStr = getTodayIso();
+    document.getElementById('prevMonthBtn').onclick = function() {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendarAndCustomHolidays();
+    };
+    document.getElementById('nextMonthBtn').onclick = function() {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendarAndCustomHolidays();
+    };
 
-  autoSaveToBrowser();
+    document.getElementById('addCustomHolidayBtn').onclick = function() {
+      var dVal = document.getElementById('customHolidayDate').value;
+      if (!dVal) return;
+      var lVal = (document.getElementById('customHolidayLabel').value || '').trim();
+      state.customHolidays[dVal] = lVal || '手动补充休市';
+      document.getElementById('customHolidayLabel').value = '';
+      renderCalendarAndCustomHolidays();
+      recalcAll();
+    };
 
-  if (!startStr || !endStr || endStr < startStr) return showError('请检查开始日期和结束日期，结束日期不能早于开始日期。');
-  if (!Number.isFinite(annualRate) || annualRate <= -100 || annualRate > 1000) return showError('年化收益率必须大于 -100%，且不超过 1000%。');
-  if (stages.length === 0) return showError('请至少保留一个定投阶段。');
-  if (stages.some(s => !s.date || !Number.isFinite(s.amount) || s.amount < 0)) return showError('每个阶段都需要填写有效日期和不小于 0 的每日金额。');
+    document.getElementById('toggleSkipDatesBtn').onclick = function() {
+      skipDatesExpanded = !skipDatesExpanded;
+      document.getElementById('skipDatesList').style.display = skipDatesExpanded ? 'block' : 'none';
+      document.getElementById('toggleSkipDatesBtn').textContent = skipDatesExpanded ? '收起具体跳过日期明细' : '展开具体跳过日期明细';
+    };
 
-  for (let i = 0; i < pauses.length; i++) {
-    const p = pauses[i];
-    if (!p.start || !p.end) return showError(`暂停区间 ${i + 1} 需要同时填写“暂停开始日期”和“恢复定投日期”。`);
-    if (p.end <= p.start) return showError(`暂停区间 ${i + 1} 的“恢复定投日期”必须晚于“暂停开始日期”。`);
+    document.getElementById('addInvestEventBtn').onclick = function() { addEvent('invest'); };
+    document.getElementById('addStopEventBtn').onclick = function() { addEvent('stop'); };
+    document.getElementById('sortEventsBtn').onclick = function() {
+      state.events.sort(function(a, b) { return (a.date || '').localeCompare(b.date || ''); });
+      renderEvents();
+      recalcAll();
+    };
+    document.getElementById('resetDemoBtn').onclick = function() {
+      state = getDefaultState();
+      renderFunds();
+      loadFundToInputs();
+      renderEvents();
+      renderCalendarAndCustomHolidays();
+      recalcAll();
+    };
+    document.getElementById('calculate').onclick = recalcAll;
+
+    document.getElementById('addFundBtn').onclick = function() {
+      syncFundInputsToState();
+      var nid = 'fund_' + Date.now();
+      var nf = { id: nid, fundType: '纳斯达克100', fundCode: '', fundName: '基金' + (state.funds.length + 1), endDate: '2046-10-12', rate: '10', useUsHolidays: true, currentAsset: '' };
+      state.funds.push(nf);
+      state.activeFundId = nid;
+      renderFunds();
+      loadFundToInputs();
+      renderEvents();
+      renderCalendarAndCustomHolidays();
+      recalcAll();
+    };
+
+    document.getElementById('deleteFundBtn').onclick = function() {
+      if (state.funds.length <= 1) return;
+      var delId = state.activeFundId;
+      var nextFunds = [];
+      var i;
+      for (i = 0; i < state.funds.length; i++) {
+        if (state.funds[i].id !== delId) nextFunds.push(state.funds[i]);
+      }
+      state.funds = nextFunds;
+      var nextEvents = [];
+      for (i = 0; i < state.events.length; i++) {
+        if (state.events[i].fundId !== delId) nextEvents.push(state.events[i]);
+      }
+      state.events = nextEvents;
+      state.activeFundId = state.funds[0].id;
+      renderFunds();
+      loadFundToInputs();
+      renderEvents();
+      renderCalendarAndCustomHolidays();
+      recalcAll();
+    };
+
+    document.getElementById('currentAsset').oninput = function() {
+      recalcAll();
+    };
+
+    document.getElementById('fundName').oninput = function() {
+      syncFundInputsToState();
+      renderFunds();
+      renderEvents();
+      recalcAll();
+    };
+
+    document.getElementById('useUsHolidays').onchange = function() {
+      renderCalendarAndCustomHolidays();
+      recalcAll();
+    };
+
+    ['fundType','fundCode','endDate','rate'].forEach(function(id) {
+      var el = document.getElementById(id);
+      el.onchange = recalcAll;
+      el.oninput = recalcAll;
+    });
   }
 
-  const sortedStages = [...stages].sort((a, b) => a.date.localeCompare(b.date));
-  if (sortedStages.some((s, i) => i > 0 && s.date === sortedStages[i - 1].date)) return showError('不能有两个阶段使用同一个生效日期，请合并金额或修改日期。');
-  if (sortedStages[0].date > startStr) return showError('第一个定投阶段必须在开始计算日期当天或之前生效。');
-  if (sortedStages.some(s => s.date > endStr)) return showError('定投阶段的生效日期不能晚于结束计算日期。');
-
-  calculateActualToToday(sortedStages, pauses, startStr, todayStr, includeUsHolidays);
-
-  const tradingDaysPerYear = includeUsHolidays ? 235 : 242;
-  const dailyRate = Math.pow(1 + annualRate / 100, 1 / tradingDaysPerYear) - 1;
-  let balance = 0, principal = 0, dayCount = 0, totalPausedDays = 0, totalCnSkipped = 0, totalUsSkipped = 0, stageIndex = 0;
-  const detail = sortedStages.map(s => ({ ...s, days: 0, pausedDays: 0, principal: 0 }));
-  const start = new Date(startStr + 'T00:00:00Z');
-  const end = new Date(endStr + 'T00:00:00Z');
-
-  for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
-    const iso = formatIsoUtc(d);
-    while (stageIndex + 1 < sortedStages.length && sortedStages[stageIndex + 1].date <= iso) stageIndex++;
-    const status = getMarketDayStatus(d, iso, includeUsHolidays);
-    if (status === 'WEEKEND' || status === 'CN_HOLIDAY') {
-      totalCnSkipped++;
-      continue;
-    }
-    if (status === 'US_HOLIDAY') {
-      totalUsSkipped++;
-      continue;
-    }
-
-    balance *= 1 + dailyRate;
-
-    if (isDatePaused(iso, pauses)) {
-      totalPausedDays++;
-      detail[stageIndex].pausedDays++;
-    } else {
-      const amount = sortedStages[stageIndex].amount;
-      balance += amount;
-      principal += amount;
-      dayCount++;
-      detail[stageIndex].days++;
-      detail[stageIndex].principal += amount;
-    }
-  }
-
-  document.getElementById('total').textContent = money(balance);
-  document.getElementById('principal').textContent = money(principal);
-  document.getElementById('profit').textContent = money(balance - principal);
-  document.getElementById('dayCount').textContent = dayCount.toLocaleString('zh-CN') + ' 天';
-  document.getElementById('cnSkippedTotal').textContent = totalCnSkipped.toLocaleString('zh-CN') + ' 天';
-  document.getElementById('usSkippedTotal').textContent = totalUsSkipped.toLocaleString('zh-CN') + ' 天';
-  document.getElementById('pausedDayCount').textContent = totalPausedDays.toLocaleString('zh-CN') + ' 个交易日';
-  document.getElementById('usedRate').textContent = annualRate.toFixed(2) + '%';
-  document.getElementById('breakdown').innerHTML = detail.map(s =>
-    `<tr><td>${dateText(s.date)}</td><td>${money(s.amount)}</td><td>${s.days.toLocaleString('zh-CN')}</td><td>${s.pausedDays.toLocaleString('zh-CN')}</td><td>${money(s.principal)}</td></tr>`
-  ).join('');
-}
-
-function showError(message) {
-  const el = document.getElementById('error');
-  el.textContent = message;
-  el.style.display = 'block';
-}
-
-document.getElementById('startDate').addEventListener('change', calculate);
-document.getElementById('endDate').addEventListener('change', calculate);
-document.getElementById('rate').addEventListener('input', calculate);
-document.getElementById('useUsHolidays').addEventListener('change', calculate);
-document.getElementById('currentAsset').addEventListener('input', updateRealtimeComparison);
-document.getElementById('addStage').addEventListener('click', () => {
-  addStage();
-  calculate();
-});
-document.getElementById('addPause').addEventListener('click', () => {
-  addPause('2027-05-05', '2028-05-05');
-  calculate();
-});
-document.getElementById('calculate').addEventListener('click', calculate);
-document.getElementById('exportHtmlBtn').addEventListener('click', exportUpdatedHtmlFile);
-document.getElementById('copyHtmlBtn').addEventListener('click', copyUpdatedHtmlCode);
-
-loadInitialState();
-calculate();
+  init();
+})();
 </script>
 </body>
 </html>
